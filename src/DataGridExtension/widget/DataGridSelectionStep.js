@@ -232,7 +232,7 @@ define([
                 params: {
                     applyto: "selection",
                     actionname: this.onclickmf,
-                    guids: this.context.getGuidS()
+                    guids: this.context.getGuids()
                 },
                 callback: lang.hitch(this, function(value) {
                     if (value === true) {
