@@ -38,7 +38,7 @@ define([
                 // get the enclosing dataview
                 this.dataView = registry.byNode(query(this.domNode).closest(".mx-dataview")[0]);
                 // on refresh new widgets are generated in same window, so use latest.
-                var gridNodes = query('[mxid="' + this.dataView.datasource.contextsource + '"]'),
+                var gridNodes = query('[data-mendix-id="' + this.dataView.datasource.contextsource + '"]'),
                     classes = this.class;
                 this.grid = registry.byNode(gridNodes[0]);
 
@@ -97,7 +97,7 @@ define([
         },
 
         isLastRowSelected: function() {
-            var rowsLeft = this.grid._dataSource._setsize - this.grid._dataSource._offset - 1;
+            var rowsLeft = this.grid._dataSource._setSize - this.grid._dataSource._offset - 1;
             if (rowsLeft - this.getSelectedIndex() <= 0) {
                 return true;
             }
@@ -129,7 +129,7 @@ define([
 
         getSelectedIndex: function() {
             // get index of selected row based on dom element tr with selected class
-            var rowsLeft = this.grid._dataSource._setsize - this.grid._dataSource._offset;
+            var rowsLeft = this.grid._dataSource._setSize - this.grid._dataSource._offset;
             for (var i = 0; i < this.grid._gridRowNodes.length && i < rowsLeft; i++) {
                 if (dojoClass.contains(this.grid._gridRowNodes[i], "selected")) {
                     return i; // find selected
@@ -148,7 +148,7 @@ define([
                     this.grid.deselectAll();
                     selectedIndex--; // previous row index
                     var nextRow = rows[selectedIndex];
-                    var guid = this.grid.domData(nextRow, "mendixguid");
+                    var guid = this.grid.getMxObjectAtRow(selectedIndex)._guid;
                     this.setSelectedGuid(guid);
                     this.grid.selectRow(nextRow);
                     this.shareSelected();
@@ -201,7 +201,7 @@ define([
                     this.grid.deselectAll();
                     selectedIndex++; // next index
                     var nextRow = rows[selectedIndex];
-                    var guid = this.grid.domData(nextRow, "mendixguid");
+                    var guid = this.grid.getMxObjectAtRow(selectedIndex)._guid;
                     this.setSelectedGuid(guid); // set mx-grid property
                     this.grid.selectRow(nextRow);
                     this.shareSelected();

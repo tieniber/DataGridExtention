@@ -10,6 +10,11 @@
             <category>Columns</category>
             <description>When true, columns can Moved, store sort order and hidden. Can not be used in combination with responsive Columns.</description>
         </property>
+		<property key="autosizeColumns" type="boolean" required="true" defaultValue="false">
+			<caption>Autosize Columns</caption>
+			<category>Columns</category>
+			<description>When true, columns are automatically sized based on their content. Works with Flex Header property.</description>
+		</property>        
         <property key="responsiveHeaders" type="boolean" required="true" defaultValue="false">
             <caption>Responsive Columns</caption>
             <category>Columns</category>

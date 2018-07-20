@@ -19,9 +19,10 @@ define([
     "dojo/_base/array",
     "dojo/mouse",
     "dojo/on",
+    "dojo/aspect",
     "dojo/query",
     "dojo/NodeList-traverse"
-], function(declare, _WidgetBase, JSON, Moveable, event, Mover, domGeom, ColumnResizer, domConstruct, domAttr, domClass, domStyle, dojoEvent, lang, dojoArray, mouse, on, query) {
+], function(declare, _WidgetBase, JSON, Moveable, event, Mover, domGeom, ColumnResizer, domConstruct, domAttr, domClass, domStyle, dojoEvent, lang, dojoArray, mouse, on, aspect, query) {
     "use strict";
 
     return declare(null, {
@@ -71,7 +72,7 @@ define([
             }
 
             if (this.hasFlexHeader && this.gridSettingsEntity && this.settingsAttr && this.gridIdAttr && this.userEntity) {
-                    // Guest users and users that are not of the correct entity type should always use local storage
+                // Guest users and users that are not of the correct entity type should always use local storage
                 var uEntity = this.userEntity.split("/")[1];
                 var meta = mx.meta.getEntity(mx.session.getUserClass());
                 var superEntities = meta.getSuperEntities();
@@ -130,6 +131,10 @@ define([
                     this.getColumnMenu();
                     this.setHandlers();
                 }));
+            }
+            if (this.autosizeColumns) {
+                domClass.add(this.grid, "grid-auto-width");
+                aspect.after(this.grid, "fillGrid", lang.hitch(this, this.columnAutosizer));
             }
         },
 
@@ -373,19 +378,51 @@ define([
         },
 
         distributeColumnWidth: function(attrs) {
-            var i = null;
-            var total = 0; // count total
-            for (i = 0; i < attrs.length; i++) {
-                total += parseFloat(attrs[i].display.width, 10);
-            }
+            if (this.autosizeColumns) {
+                this.columnAutosizer();
+            } else {
+                var i = null;
+                var total = 0; // count total
+                for (i = 0; i < attrs.length; i++) {
+                    total += parseFloat(attrs[i].display.width, 10);
+                }
                 // redistribute the width over the 100%
-            for (i = 0; i < attrs.length; i++) {
-                var width = (parseFloat(attrs[i].display.width, 10) / total) * 100;
-                attrs[i].display.width = (Math.round(width) === 0) ? "0%" : width.toString() + "%";
-                attrs[i].order = i;
+                for (i = 0; i < attrs.length; i++) {
+                    var width = (parseFloat(attrs[i].display.width, 10) / total) * 100;
+                    attrs[i].display.width = (Math.round(width) === 0) ? "0%" : width.toString() + "%";
+                    attrs[i].order = i;
+                }
             }
         },
+        columnAutosizer: function() {
+            var dg = this.grid,
+                totalWidth = 0;
+            dg.headTable.style = "width: auto";
+            dg.gridTable.style = "width: auto";
+            var i = 0;
+            var magicSpacing = 14;
+            for (i = 0; i < dg.headTableGroupNode.children.length; i++) {
+                dg.headTableGroupNode.children[i].style = "";
+                dg.bodyTableGroupNode.children[i].style = "";
+            }
 
+            for (i = 0; i < dg._gridColumnNodes.length; i++) {
+                var thisCol = dg._gridColumnNodes[i];
+                var thisColMax = thisCol.offsetWidth;
+                for (var j = 0; j < dg._gridMatrix.length; j++) {
+                    var thisWidth = dg._gridMatrix[j][i].offsetWidth + magicSpacing;
+                    if (thisWidth > thisColMax) {
+                        thisColMax = thisWidth;
+                    }
+                }
+                dg.headTableGroupNode.children[i].style = "width: " + thisColMax + "px";
+                dg.bodyTableGroupNode.children[i].style = "width: " + thisColMax + "px";
+
+                totalWidth += thisColMax;
+            }
+            dg.headTable.style = "min-width: " + totalWidth + "px";
+            dg.gridTable.style = "min-width: " + totalWidth + "px";
+        },
         updateColumnVisibility: function() {
             // update the column visibility
             if (this.columnChanges.length > 0) {
@@ -469,7 +506,7 @@ define([
 
             for (i = 0; i < this.gridAttributes.length; i++) {
                 if (this.gridAttributes[i].sort) {
-                    this.grid._dataSource.setSortOptions(this.gridAttributes[i].tag, this.gridAttributes[i].sort, !isFirst);
+                    this.grid._dataSource.setSort(this.gridAttributes[i].tag, this.gridAttributes[i].sort, !isFirst);
                     var sortNode = query("." + this.grid.cssmap.sortText, headerNodes[i])[0];
                     if (this.gridAttributes[i].sort === "asc") {
                         sortNode.innerHTML = "&#9650;";
@@ -482,7 +519,7 @@ define([
                 }
             }
             if (this.grid.constraintsFilled()) {
-                this.grid._dataSource.refresh(lang.hitch(this.grid, this.grid.refreshGrid));
+                this.grid._dataSource.reload(lang.hitch(this.grid, this.grid.refreshGrid));
             }
         },
 
@@ -766,10 +803,13 @@ define([
 
         reloadFullGrid: function() {
             // rebuild grid header and body
-            // this.doGridAttributes();
+            /* this.doGridAttributes();*/
             this.reloadGridHeader();
             this.clearGridDataNodes();
             this.grid.fillGrid();
+            if (this.autosizeColumns) {
+                this.columnAutosizer();
+            }
         },
 
         setHandlers: function() {
@@ -919,6 +959,10 @@ define([
                 for (var i = 0; i < _c86; i++) {
                     this.grid.addNewRow();
                 }
+            }
+            if (this.autosizeColumns) {
+                this.grid._resizer.recalculate = function() { /* intentially empty*/ };
+                this.grid._resizer.prepareTable = function() { /* intentially empty*/ };
             }
             /* even handlers do not need be set again.
             this.grid.own(_c52(this.grid.gridBodyNode, "tr:click", function(e) {
