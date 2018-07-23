@@ -361,7 +361,7 @@ define([
                 }
             }
             // set minimum width: for columns hidden by modeler (set width to 0)
-            if (att.display.width === "0%") {
+            if (att.display.width === "0%" || att.display.width === "1%") {
                 att.display.width = "10%";
             }
             // set store
