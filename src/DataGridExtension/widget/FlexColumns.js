@@ -681,7 +681,7 @@ define([
             var headers = this.grid.gridHeadNode.children[0].children;
             for (var i = 0; i < headers.length; i++) {
                 var tag = this.grid.domData(headers[i], "datakey");
-                on(headers[i], "mousedown", lang.hitch(this, this.headerClick, tag, headers[i]));
+                on(headers[i], "contextmenu", lang.hitch(this, this.headerClick, tag, headers[i]));
             }
         },
 
@@ -994,23 +994,30 @@ define([
             this.selectedHeader = tag;
             this.selectedHeaderNode = node;
             var compensation = 5; // TODO rename
-            if (mouse.isRight(evt)) {
-                // Correct x pos to prevent from overflowing on right hand side.
-                domStyle.set(this.contextMenu, "display", "block");
-                var x = evt.pageX - compensation,
-                    menuWidth = domGeom.position(this.contextMenu).w,
-                    winWidth = window.innerWidth;
 
-                if (evt.pageX > winWidth - menuWidth) {
-                    x = winWidth - menuWidth - compensation;
-                }
+            var evtX = evt.x;
+            var evtY = evt.y;
 
-                domStyle.set(this.contextMenu, "left", x + "px");
-                domStyle.set(this.contextMenu, "top", (evt.pageY - compensation) + "px");
-                this.connect(this.contextMenu, "onmouseleave", lang.hitch(this, this.closeContextMenu));
-
-                dojoEvent.stop(evt);
+            var isIE = "-ms-scroll-limit" in document.documentElement.style && "-ms-ime-align" in document.documentElement.style;
+            if (isIE) {
+                evtX = evt.pageX;
+                evtY = evt.pageY;
             }
+            // Correct x pos to prevent from overflowing on right hand side.
+            domStyle.set(this.contextMenu, "display", "block");
+            var x = evtX - compensation,
+                menuWidth = domGeom.position(this.contextMenu).w,
+                winWidth = window.innerWidth;
+
+            if (evtX > winWidth - menuWidth) {
+                x = winWidth - menuWidth - compensation;
+            }
+
+            domStyle.set(this.contextMenu, "left", x + "px");
+            domStyle.set(this.contextMenu, "top", (evtY - compensation) + "px");
+            this.connect(this.contextMenu, "onmouseleave", lang.hitch(this, this.closeContextMenu));
+
+            dojoEvent.stop(evt);
         },
 
         closeContextMenu: function() {
