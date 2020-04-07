@@ -82,7 +82,7 @@
             <category>Empty Table</category>
             <description>The microflow to execute on click of button or link.</description>
             <returnType type="Void" />
-        </property>
+        </property>        
         <property key="onclickPage" type="form" required="false">
             <caption>On click Page</caption>
             <category>Empty Table</category>
@@ -180,11 +180,17 @@
                     </enumerationValues>
                 </property>
                 <property key="onClickMicroflow" type="microflow" required="true" entityProperty="../dataGridEntity">
-                    <caption>On Click</caption>
+                    <caption>On Click Microflow</caption>
                     <category>Behavior</category>
                     <description>This microflow will be invoked when the user the button.</description>
                     <returnType type="Void" />
                 </property>
+                <property key="onClickNanoflow" type="nanoflow" required="true" entityProperty="../dataGridEntity">
+                    <caption>On Click Nanoflow</caption>
+                    <category>Behavior</category>
+                    <description>This nanoflow will be invoked when the user the button.</description>
+                    <returnType type="Void" />
+                </property>                
                 <property key="showProgress" type="boolean" defaultValue="false">
                     <caption>Show progress</caption>
                     <category>Behavior</category>

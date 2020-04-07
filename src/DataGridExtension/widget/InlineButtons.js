@@ -9,8 +9,8 @@ define([
     "dojo/dom-class",
     "dojo/query",
     "dijit/registry",
-    "dojo/_base/event"
-], function(declare, _WidgetBase, aspect, lang, dojoClass, query, registry, event) {
+    "mendix/lib/MxContext"
+], function(declare, _WidgetBase, aspect, lang, dojoClass, query, registry, MxContext) {
     "use strict";
 
     return declare(null, {
@@ -121,6 +121,7 @@ define([
             row = parseInt(row, 10);
             var rowObject = this.grid.getMxObjectAtRow(row);
             var microflow = btnSetting.onClickMicroflow;
+            var nanoflow = btnSetting.onClickNanoflow;
             if (microflow) {
                 mx.ui.action(microflow, {
                     params: {
@@ -136,6 +137,19 @@ define([
                         logger.error("DataGridExtension.widget.InlineButtons.onclickEventInline: XAS error executing microflow" + error.message);
                     }
                 }, this);
+            } else if (nanoflow) {
+                var myContext = new MxContext();
+                myContext.setTrackEntity(rowObject);
+                mx.data.callNanoflow({
+                    nanoflow: nanoflow,
+                    origin: this.mxform,
+                    context: myContext,
+                    callback: function(/* result*/) { /**/ },
+                    error: function(error) {
+                        mx.ui.error("Error executing nanoflow " + nanoflow + " : " + error.message);
+                        logger.error("DataGridExtension.widget.InlineButtons.onclickEventInline: error executing nanoflow" + error.message);
+                    }
+                });
             }
         }
 
