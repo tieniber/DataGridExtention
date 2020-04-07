@@ -139,7 +139,7 @@ define([
                 }, this);
             } else if (nanoflow) {
                 var myContext = new MxContext();
-                myContext.setTrackEntity(rowObject);
+                myContext.setTrackObject(rowObject);
                 mx.data.callNanoflow({
                     nanoflow: nanoflow,
                     origin: this.mxform,
